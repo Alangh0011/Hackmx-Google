@@ -1,56 +1,65 @@
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
+import imaplib
+import email
+from email.header import decode_header
+import re
 import os
 from dotenv import load_dotenv
 
 # Cargar variables de entorno
 load_dotenv()
 
-def send_test_email():
-    remitente = os.getenv("USER")  # Correo electrónico del remitente
-    password = os.getenv("PASS")    # Contraseña de aplicación del remitente
-    destinatario = "destinatario@ejemplo.com"  # Reemplaza con el correo del destinatario
+# Configuraciones de conexión IMAP
+IMAP_SERVER = "imap.gmail.com"
+IMAP_PORT = 993
 
-    # Configurar el contenido del correo
-    mensaje = MIMEMultipart("alternative")
-    mensaje["Subject"] = "Alerta de Seguridad en tu Red"
-    mensaje["From"] = remitente
-    mensaje["To"] = destinatario
 
-    # Cuerpo del correo
-    body = """
-    <html>
-      <body>
-        <h2>Hola, hemos detectado actividades sospechosas en tu red.</h2>
-        <p>Por favor, revisa la siguiente información sobre los riesgos detectados:</p>
-        <ul>
-          <li>Actividad inusual por parte de un usuario</li>
-          <li>Muchas solicitudes a páginas no protegidas</li>
-          <li>Te llegó un mensaje al messenger con un idioma que no es el tuyo</li>
-        </ul>
-        <p>Haz clic en el botón a continuación para obtener más información:</p>
-        <a href="https://github.com/IkerFedaDaca/Reto-HackMx" style="text-decoration: none;">
-          <button style="padding: 10px 20px; color: white; background-color: #4CAF50; border: none; border-radius: 5px;">
-            Más información
-          </button>
-        </a>
-      </body>
-    </html>
-    """
+def check_email():
+    username = os.getenv("USER")
+    password = os.getenv("PASS")
 
-    # Adjuntar el cuerpo HTML
-    mensaje.attach(MIMEText(body, "html"))
+    # Conectar al servidor IMAP
+    with imaplib.IMAP4_SSL(IMAP_SERVER, IMAP_PORT) as mail:
+        mail.login(username, password)
 
-    # Conectar al servidor SMTP de Gmail y enviar el correo
-    try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
-            server.starttls()  # Conexión segura
-            server.login(remitente, password)
-            server.sendmail(remitente, destinatario, mensaje.as_string())
-        print("Correo enviado exitosamente.")
-    except Exception as e:
-        print(f"Error al enviar el correo: {e}")
+        # Seleccionar la bandeja de entrada
+        mail.select("inbox")
 
-# Ejecutar la función para enviar el correo de prueba
-send_test_email()
+        # Buscar correos sin leer
+        status, messages = mail.search(None, 'UNSEEN')
+
+        if status == "OK":
+            for num in messages[0].split():
+                # Obtener el correo
+                status, msg_data = mail.fetch(num, '(RFC822)')
+                for response_part in msg_data:
+                    if isinstance(response_part, tuple):
+                        msg = email.message_from_bytes(response_part[1])
+
+                        # Decodificar el asunto
+                        subject, encoding = decode_header(msg["Subject"])[0]
+                        if isinstance(subject, bytes):
+                            subject = subject.decode(encoding if encoding else "utf-8")
+                        print("Asunto:", subject)
+
+                        # Analizar el contenido del correo
+                        if msg.is_multipart():
+                            for part in msg.walk():
+                                content_type = part.get_content_type()
+                                content_disposition = str(part.get("Content-Disposition"))
+
+                                # Solo analizar el cuerpo del mensaje
+                                if content_type == "text/plain" and "attachment" not in content_disposition:
+                                    body = part.get_payload(decode=True).decode()
+
+                                    # Buscar signos de actividad sospechosa
+                                    if re.search(r"idioma|enlace|link", body, re.IGNORECASE):
+                                        print("Advertencia: Mensaje sospechoso encontrado.")
+                                        # Lógica adicional para enviar una alerta o marcar el correo
+                        else:
+                            body = msg.get_payload(decode=True).decode()
+                            if re.search(r"idioma|enlace|link", body, re.IGNORECASE):
+                                print("Advertencia: Mensaje sospechoso encontrado.")
+
+
+# Ejecutar la función
+check_email()

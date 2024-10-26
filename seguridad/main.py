@@ -42,7 +42,7 @@ def packet_analyzer(packet):
         ping_requests[src_ip] += 1
         if ping_requests[src_ip] > THRESHOLD:
             body = f"Sospecha de ataque de ping desde {src_ip} con {ping_requests[src_ip]} pings."
-            send_alert_email("Alerta de Ping DDoS Detectada", body)
+            send_alert_email("Alerta de Ping DDoS Detectada, visite: https://hackmx-google.vercel.app para más información", body)
             ping_requests[src_ip] = 0  # Reiniciar conteo
 
     # Análisis de HTTP
@@ -51,7 +51,7 @@ def packet_analyzer(packet):
         http_requests[src_ip] += 1
         if http_requests[src_ip] > THRESHOLD:
             body = f"Tráfico HTTP sospechoso desde {src_ip} con {http_requests[src_ip]} solicitudes."
-            send_alert_email("Alerta de Tráfico HTTP No Seguro", body)
+            send_alert_email("Alerta de Tráfico HTTP No Seguro, visite: https://hackmx-google.vercel.app para más información", body)
             http_requests[src_ip] = 0  # Reiniciar conteo
 
     # Análisis de HTTPS
@@ -60,7 +60,7 @@ def packet_analyzer(packet):
         https_requests[src_ip] += 1
         if https_requests[src_ip] > THRESHOLD:
             body = f"Tráfico HTTPS alto desde {src_ip} con {https_requests[src_ip]} solicitudes."
-            send_alert_email("Alerta de Tráfico HTTPS Alto", body)
+            send_alert_email("Alerta de Tráfico HTTPS Alto, visite: https://hackmx-google.vercel.app para más información", body)
             https_requests[src_ip] = 0  # Reiniciar conteo
 
     # Análisis de SSH
@@ -68,8 +68,8 @@ def packet_analyzer(packet):
         src_ip = packet['IP'].src
         ssh_attempts[src_ip] += 1
         if ssh_attempts[src_ip] > THRESHOLD:
-            body = f"Intentos de conexión SSH sospechosos desde {src_ip} con {ssh_attempts[src_ip]} intentos."
-            send_alert_email("Alerta de Fuerza Bruta en SSH", body)
+            body = f"Intentos de conexión SSH sospechosos desde {src_ip} con {ssh_attempts[src_ip]}. visite: https://hackmx-google.vercel.app para más información"
+            send_alert_email("Alerta de Fuerza Bruta en SSH, visite: https://hackmx-google.vercel.app para más información", body)
             ssh_attempts[src_ip] = 0  # Reiniciar conteo
 
 # Iniciar monitoreo en la red

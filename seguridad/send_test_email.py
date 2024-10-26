@@ -30,7 +30,7 @@ def send_test_email():
           <li>Te llegó un mensaje al messenger con un idioma que no es el tuyo</li>
         </ul>
         <p>Haz clic en el botón a continuación para obtener más información:</p>
-        <a href="https://github.com/IkerFedaDaca/Reto-HackMx" style="text-decoration: none;">
+        <a href="https://hackmx-google.vercel.app" style="text-decoration: none;">
           <button style="padding: 10px 20px; color: white; background-color: #4CAF50; border: none; border-radius: 5px;">
             Más información
           </button>
