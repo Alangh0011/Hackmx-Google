@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 
 const Chatbot = () => {
   useEffect(() => {
+    // Verificar si el script ya está cargado
     if (!document.querySelector('script[src="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js"]')) {
       const script = document.createElement('script');
       script.src = "https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js";
@@ -44,11 +45,12 @@ const Chatbot = () => {
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
           }
 
-          /* Posición de la burbuja */
+          /* Posición y z-index de la burbuja para que esté sobre todos los componentes */
           df-messenger {
             position: fixed;
             bottom: 16px;
             right: 16px;
+            z-index: 9999; /* Asegura que esté sobre todos los elementos */
           }
         `}
       </style>
